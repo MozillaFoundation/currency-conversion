@@ -6,7 +6,8 @@ from urllib3 import util
 from constants import PERIOD
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 @dataclass (frozen = True)
 class ExchangeRateEvent:
@@ -38,8 +39,9 @@ class ExchangeRateEvent:
     def to_sqs_message(self):
         try:
             exchange_rates = self.validate_values()
-            logger.info('Values successfully validated, creating SQS message')
-            sqs_dict = json.dumps({'data':exchange_rates})#.encode('utf-8')
+            #logger.info('Values successfully validated, creating SQS message')
+            sqs_dict = json.dumps({"data":exchange_rates})
+           
         except TypeError as error:
             #raise
             sqs_dict = None
@@ -54,7 +56,7 @@ class ExchangeRateEvent:
     def to_sql_values(self):
         try:
             #exchange_rates = self.validate_values()
-            logger.info('Values successfully validated, creating SQL Values')
+            #logger.info('Values successfully validated, creating SQL Values')
             sql_values = self.validate_values()
             #sql_values = exchange_rates
         except TypeError as error:

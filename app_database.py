@@ -1,67 +1,100 @@
-from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
-from sqlalchemy import MetaData, Table
+from sqlalchemy import MetaData, Table, select
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-def create_db_engine(db_url):
+def create_db_engine(db_url) -> create_engine:
     try:
         engine = create_engine(db_url)
-        Session = sessionmaker(autocommit=True, bind=engine)
+        logger.info('Successfully created database engine')
         
     except Exception as error:
-        logger.exception('Exception encountered when creating session and engine. {}'.format(error))
+        logger.exception('Exception encountered when creating engine. {}'.format(error))
         engine = None
-        Session = None
         
-    return engine, Session
+    return engine
 
-def insert_exchange_rate(db_url, table, data):
-    #Create the session and the engine
-    engine, in_session = create_db_engine(db_url)
+def connect_db_engine(db_url):
+    engine = create_db_engine(db_url)
     
-    #As long as the engine and session are not None, attempt the connection
-    if engine and in_session:
-        with in_session.begin() as session:
+    if engine:
+        try:
+            engine = engine.connect()
+            logger.info('Successfully connected to database engine.')
+        except:
+            logger.exception('Failed to connect to database. {}'.format(error))
+            
+    return engine
+            
+        
+def connect_db_object(connected_engine, object_name) -> Table:
+    try:
+        metadata = MetaData(connected_engine)
+        logger.info('Successfully retrieved Metadata from the database.')
+        
+        target_object = Table(object_name, metadata, autoload = True)
+        logger.info('Successfully connected to the {} object in the database.'.format(object_name))
+        
+    except Exception as error:
+        metadata = None
+        
+        target_object = None
+        
+        logger.exception('Failed to connect to the {} object in the database. {}'.format(object_name, error))
+    return target_object
+        
+        
+def insert_exchange_rate(connected_engine, object_name, data):
+    try:
+        target_object = connect_db_object(connected_engine, object_name)
+
+        table_cols = set([c.name for c in target_object.columns])
+        logger.info('Extracting columns from database table.')
+
+        if data:
+            data_cols = set([k for v in data for k in v.keys()])
+            logger.info('Extracting columns from the API data.')
+
+        if table_cols and data_cols:
+            logger.info('Comparing the columns between the database table and the API data.')
+            sym_diff = table_cols.symmetric_difference(data_cols)
+
+        #Log an exception if a column difference is found.
+        if sym_diff:
+            logger.exception('Column difference detected between SQL Table {} and data.'.format(target_object.name))
+            logger.exception('Aborting table insert!')
+
+        ##Need to determine if it's better to iterate through records and do individual inserts in the event that an
+        ##insert for a particular record fails. If there are no column differences then construct and execute the insert
+        else:
             try:
-                #Get the Metadata from the database using the engine 
-                metadata = MetaData(engine)
+                insert_stmt = (
+                               target_object.insert()
+                               .values(data)
+                              )
 
-                #Using the metdata connect to the desired table and autoload it for use in column checking and inserting
-                target_table = Table(table, metadata, autoload = True)
-
-                #Create sets of the table columns and the input data columns and compare if there is a symmetric difference
-                #between these two columns sets. If not, then proceed to inserting the data, otherwise return an error or 
-                #warning.
-                table_cols = set([c.name for c in target_table.columns])
+                connected_engine.execute(insert_stmt)
+                logger.info('Successfully inserted {} records into {}.'.format(len(data), target_object.name))
 
             except Exception as error:
-                table_cols = None
-                logger.exception('Failed to connect to databse and/or table object. {}'.format(error))
+                logger.exception('Table insert failed. {}'.format(error))
                 
-            if data:
-                data_cols = set([k for v in data for k in v.keys()])
+    except Exception as error:
+        logger.exception('Failed to connect to database or object'.format(error))
+                        
+def latest_exchange_rate(connected_engine, object_name):
+    try:
+        target_object = connect_db_object(connected_engine, object_name)
+        
+        select_stmt = select([target_object])
 
-            if table_cols and data_cols:
-                sym_diff = table_cols.symmetric_difference(data_cols)
-                
-                #Log an exception if a column difference is found.
-                if sym_diff:
-                    logger.exception('Column difference detected between SQL Table {} and data.'.format(table))
-                    logger.excpetion('Aborting table insert!')
+        results = connected_engine.execute(select_stmt)
 
-                ##Need to determine if it's better to iterate through records and do individual inserts in the event that an
-                ##insert for a particular record fails. If there are no column differences then construct and execute the insert
-                else:
-                    try:
-                        insert_stmt = (
-                                       target_table.insert()
-                                       .values(data)
-                                      )
-
-                        session.execute(insert_stmt)
-                        logger.info('Successfully inserted {} records into {}.'.format(len(data), table))
-
-                    except Exception as error:
-                        logger.exception('Table insert failed. {}'.format(error))
+        results = results.fetchall()
+        
+    except Exception as error:
+        results = None
+        logger.exception('Failed to connect to database and/or table object. {}'.format(error))
+    return results

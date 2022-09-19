@@ -5,7 +5,8 @@ from ExchangeRateEvent import *
 from constants import API_STATUS_CODES
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 def parse_failed_response(response, fail_info):
     

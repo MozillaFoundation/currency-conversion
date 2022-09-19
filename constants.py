@@ -71,5 +71,5 @@ API_STATUS_CODES = {
                     ,500: '500: Internal Server Error - let us know: support@currencyapi.com. '
                     }
 
-#SECRET_NAME = os.environ['SECRET_NAME']
-#AWS_REGION = os.environ['AWS_REGION']
+SECRET_NAME = os.environ['SECRET_NAME']
+AWS_REGION = os.environ['AWS_REGION']

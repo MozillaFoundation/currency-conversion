@@ -2,7 +2,10 @@ import boto3
 from constants import AWS_REGION
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logging.getLogger('boto3').setLevel(logging.WARNING)
+logging.getLogger('botocore').setLevel(logging.WARNING)
 
 
 def send_sqs_message(queue_url, data):

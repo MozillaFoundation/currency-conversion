@@ -4,7 +4,10 @@ from botocore.exceptions import ClientError
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logging.getLogger('boto3').setLevel(logging.WARNING)
+logging.getLogger('botocore').setLevel(logging.WARNING)
 
 # Use this code snippet in your app.
 # If you need more information about configurations or implementing the sample code, visit the AWS docs:   
