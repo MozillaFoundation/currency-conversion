@@ -1,11 +1,11 @@
-from sqlalchemy import create_engine
-from sqlalchemy import MetaData, Table, select
+from sqlalchemy import MetaData, Table, select, create_engine
+from sqlalchemy.engine.base import Engine, Connection
 import logging
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-def create_db_engine(db_url) -> create_engine:
+def create_db_engine(db_url) -> Engine:
     try:
         engine = create_engine(db_url)
         logger.info('Successfully created database engine')
@@ -16,7 +16,7 @@ def create_db_engine(db_url) -> create_engine:
         
     return engine
 
-def connect_db_engine(db_url):
+def connect_db_engine(db_url) -> Connection:
     engine = create_db_engine(db_url)
     
     if engine:
