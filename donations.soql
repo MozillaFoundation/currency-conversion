@@ -1,0 +1,13 @@
+select id
+       ,currency__c
+       ,local_currency_amount_number_for_nat__c
+       ,closedate
+from opportunity
+where project__c in('mozillafoundation', 'micromozillafoundation')
+      and amount = null
+      and recordtypeid in (select id 
+                           from recordtype 
+                           where sobjecttype = 'Opportunity' and name ='Donation')
+      and currency__c != null
+      and currency__c != 'USD'
+      and local_currency_amount_number_for_nat__c > 0
