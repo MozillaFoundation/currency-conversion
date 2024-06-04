@@ -11,3 +11,4 @@ where project__c in('mozillafoundation', 'micromozillafoundation')
       and currency__c != null
       and currency__c != 'USD'
       and local_currency_amount_number_for_nat__c > 0
+      and payment_method__c = 'Paypal'

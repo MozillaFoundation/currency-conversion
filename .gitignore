@@ -3,3 +3,4 @@ local_config.sh
 .ipynb_checkpoints/
 __pycache__/
 *.log
+*.csv
