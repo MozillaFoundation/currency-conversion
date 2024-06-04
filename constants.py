@@ -71,8 +71,8 @@ API_STATUS_CODES = {
                     ,500: '500: Internal Server Error - let us know: support@currencyapi.com. '
                     }
 
-SECRET_NAME = os.environ['SECRET_NAME']
-AWS_REGION = os.environ['AWS_REGION']
+#SECRET_NAME = os.environ['SECRET_NAME']
+#AWS_REGION = os.environ['AWS_REGION']
 SALESFORCE_INSTANCE_URL = os.environ['SALESFORCE_INSTANCE_URL']
 SALESFORCE_API_USER = os.environ['SALESFORCE_API_USER']
 SALESFORCE_API_PASS = os.environ['SALESFORCE_API_PASS']
