@@ -34,7 +34,7 @@ def check_response_status(response):
             logging.info('Successful request to the exchange rate API endpoint.')
             
             #Extract the rate limits and quotas from the header for logging purposes
-            quota_limit = int(response.headers['x-ratelimit-limit-monthly-month'])
+            quota_limit = int(response.headers['x-ratelimit-limit-quota-month'])
             quota_used = int(response.headers['x-ratelimit-remaining-quota-month'])
             quote_pct = 1.0 - (quota_used/quota_limit)
             
